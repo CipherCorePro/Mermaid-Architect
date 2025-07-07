@@ -1,0 +1,202 @@
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whitepaper: Mermaid Architect AI</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+            margin-bottom: 15px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .abstract {
+            background-color: #e9f7ff;
+            border-left: 4px solid #0056b3;
+            padding: 15px;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .diagram-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #ffffff; /* White background as requested */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow-x: auto; /* Add scroll for wide diagrams */
+        }
+        .diagram-container img {
+            max-width: 100%;
+            height: auto;
+            display: block; /* Remove extra space below image */
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            background-color: #f9f9f9;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        ul {
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Whitepaper: Mermaid Architect AI</h1>
+
+        <section class="abstract">
+            <h2>Zusammenfassung</h2>
+            <p>
+                Dieses Whitepaper beschreibt die Architektur und Implementierung von "Mermaid Architect AI", einer innovativen Webanwendung, die Softwareentwicklungsteams und Architekten bei der schnellen Analyse, dem Verständnis und der Dokumentation von Projektstrukturen unterstützt. Durch das Hochladen eines ZIP-Archivs mit Projektdateien analysiert die Anwendung den Code, generiert automatisch Diagramme (Mermaid oder PlantUML) mithilfe eines externen KI-Modells und bietet Funktionen zur Anzeige, Bearbeitung, Fehlerkorrektur durch KI und zum Export der Diagramme sowie generierter Dokumentation. Die Anwendung spart wertvolle Zeit bei der manuellen Dokumentation komplexer Codebasen und bietet einen dynamischen Überblick über die Projektarchitektur.
+            </p>
+        </section>
+
+        <section>
+            <h2>1. Einleitung</h2>
+            <p>
+                In der modernen Softwareentwicklung ist das Verständnis der Projektarchitektur und der Abhängigkeiten zwischen den Komponenten entscheidend für Wartbarkeit, Skalierbarkeit und erfolgreiche Weiterentwicklung. Die manuelle Erstellung und Aktualisierung von Architekturdokumentation, insbesondere von Diagrammen, ist jedoch oft zeitaufwendig, fehleranfällig und wird bei sich schnell ändernden Codebasen schnell obsolet. Dies stellt eine erhebliche Herausforderung für Entwicklungsteams dar.
+            </p>
+            <p>
+                "Mermaid Architect AI" adressiert dieses Problem, indem es den Prozess der Architekturanalyse und Diagrammgenerierung automatisiert. Die Anwendung ermöglicht es Benutzern, ein Projekt als ZIP-Archiv hochzuladen. Ein integriertes KI-Modell analysiert den Code, identifiziert Schlüsselstrukturen und Abhängigkeiten und generiert daraus Diagramme im Mermaid- oder PlantUML-Format. Darüber hinaus bietet die Anwendung eine KI-gestützte Fehlerkorrektur für generierten Diagrammcode und Exportoptionen für verschiedene Dokumentationsformate. Ziel ist es, Entwicklern und Architekten ein Werkzeug an die Hand zu geben, das ihnen hilft, Projekte schnell zu visualisieren und ihre Dokumentation aktuell zu halten.
+            </p>
+        </section>
+
+        <section>
+            <h2>2. Systemarchitektur</h2>
+            <p>
+                Die Architektur von "Mermaid Architect AI" ist als Single-Page-Application (SPA) konzipiert, die im Browser des Benutzers ausgeführt wird. Die Anwendung folgt einem client-zentrierten Ansatz, bei dem die Benutzeroberfläche (UI) und die Hauptlogik im Browser verwaltet werden.
+            </p>
+            <p>
+                Der Kern der Anwendung ist eine React-basierte SPA. Der Benutzer interagiert über die UI, die Komponenten wie einen Datei-Explorer, einen Code-Editor und eine Diagramm-Anzeige umfasst.
+            </p>
+            <p>
+                Der Workflow beginnt mit dem Hochladen eines ZIP-Archivs durch den Benutzer. Die clientseitige Anwendung verarbeitet das Archiv (mithilfe von JSZip), extrahiert die Dateien und baut eine Dateistruktur auf, die im Datei-Explorer angezeigt wird. Die Inhalte der extrahierten Dateien werden im Speicher gehalten.
+            </p>
+            <p>
+                Beim Auslösen der Analyse (z. B. durch Klicken auf eine Schaltfläche) sendet die Anwendung relevante Projektdateien und Kontextinformationen an ein externes KI-Modell (implementiert über die Google GenAI API, wie aus den Projektdateien hervorgeht). Dieses KI-Modell ist für die Architekturanalyse und die Generierung von Diagrammcode (Mermaid oder PlantUML) trainiert.
+            </p>
+            <p>
+                Der vom KI-Modell zurückgegebene Diagrammcode wird im Code-Editor der Anwendung angezeigt. Gleichzeitig wird dieser Code an eine Diagramm-Rendering-Engine übergeben. Abhängig von der Benutzereinstellung wird entweder Mermaid.js direkt im Browser verwendet oder der Code wird an einen externen PlantUML-Server gesendet, um ein SVG-Bild zu erhalten. Das gerenderte Diagramm wird in der Diagramm-Anzeige visualisiert.
+            </p>
+            <p>
+                Sollte beim Rendern des Diagramms ein Fehler auftreten (z. B. ein Syntaxfehler im generierten Code), kann der Benutzer eine KI-gestützte Fehlerkorrektur anfordern. Die Anwendung sendet den fehlerhaften Code und die Fehlermeldung erneut an das KI-Modell mit der Anweisung, den Code zu korrigieren.
+            </p>
+            <p>
+                Zusätzliche Funktionen umfassen den Export des Diagramms in verschiedene Formate (PNG, SVG, Quellcode) sowie die Generierung weiterer Dokumentationsartefakte (technische Dokumentation, Whitepaper, Benutzerhandbuch) ebenfalls durch das KI-Modell. Anwendungseinstellungen wie Sprache, Diagrammtyp und Design können angepasst werden.
+            </p>
+            <p>
+                Die folgende Abbildung zeigt eine konzeptionelle Darstellung der Systemarchitektur:
+            </p>
+            <div class="diagram-container">
+              <img src="https://www.plantuml.com/plantuml/svg/TLHDZzem4BtxLumuL23jaliUgkLh4H9q4P0UzkOwe-2kiLFRAKj_VSTE0WG21w9CthnvVdxsg_FS-lAW61VUM4WTMbPGIGfPSEsXDxRcI4Nefuj13xY3TD46R91QOLGKqDzwxZ5PcboA2alLDdYqW9N9K45_pCKdwYmPhMlUqGtlMj4ZNIrXY_OlseXfQem5eV3ydTJ02wI5CZo3ZyMQqJjLWveNM5iZqBbO3vK6FfMkKFm4Rr8Xx2pY3Tr4IV59MZLNftyOQ7wZyBqMzyxAFAUU27BIDGD6WM1B3slQuXJwJBtdvWtwqchImNFB3p0XH-3R7LLBwoDif_8DpQTgtTCjlC8mnfLlW0UfSr0odPSyHv0ELcWFN6OCw7SjgkOlNMYeGQ3aByljYQ5o-93nl85NbEUDherhBRK_quAUsI1sdA5tNcv_pfFrZ_cTrCQ_vZiDOCmKlbv3q3UpbfB_BaHftSF-2hIYED5A8ghB-3Vv1KVfznI3NWMwSdw3VqfqFaHaOgobR4YZhmTUibFlSXnQ8JhYKvDW1RzJdXOPdSQMcwrXDsbujbKWea4TQvjz5SPw69VU6mrzyZ89dcvDQGKcKoDSWbuC1vrXcvgZ3aSqcQD6o-F2hxKkjFGog8r7ia43ENvfQ8vpT-Itw3rjfck7_Rr0YaRzATmyNDrqxocSU87qGrYVpgRjJWNTPx6qs-C1swkh7Jutn-kFjVobVtMweiTXFdm2sxXTXKNZ4Nn5prwfJjVnVm00" alt="PlantUML Diagramm der Systemarchitektur">
+            </div>
+        </section>
+
+        <section>
+            <h2>3. Kerntechnologien & Implementierung</h2>
+            <p>
+                Die Anwendung ist mit modernen Webtechnologien implementiert, wobei der Fokus auf einer reaktiven Benutzeroberfläche und der Integration externer Dienste liegt.
+            </p>
+            <ul>
+                <li><strong>React:</strong> Als Framework für die Benutzeroberfläche ermöglicht React eine komponentenbasierten Entwicklung und effiziente Verwaltung des Anwendungszustands. Die gesamte UI, von der Dateistrukturanzeige bis zum Diagramm-Viewer, ist in React-Komponenten aufgebaut.</li>
+                <li><strong>TypeScript:</strong> Die Verwendung von TypeScript bringt Typsicherheit in das Projekt, was die Codequalität verbessert und die Wartung erleichtert.</li>
+                <li><strong>Vite:</strong> Vite dient als schneller Build-Tool und Entwicklungsserver, optimiert für moderne JavaScript-Projekte.</li>
+                <li><strong>JSZip:</strong> Diese Bibliothek wird clientseitig verwendet, um die hochgeladenen ZIP-Archive zu lesen und deren Inhalt zu extrahieren.</li>
+                <li><strong>Mermaid.js:</strong> Eine clientseitige JavaScript-Bibliothek zum Rendern von Diagrammen und Flussdiagrammen aus Text in Markdown-ähnlicher Syntax. Sie wird für die direkte Anzeige von Mermaid-Diagrammen im Browser verwendet.</li>
+                <li><strong>PlantUML:</strong> Eine weitere beliebte Sprache zur Diagrammbeschreibung. Die Anwendung integriert sich mit einem externen PlantUML-Server (<code>https://www.plantuml.com/plantuml/</code>), um PlantUML-Code in SVG-Bilder umzuwandeln.</li>
+                <li><strong>html2canvas:</strong> Wird verwendet, um den Inhalt des Diagramm-Containers (insbesondere für Mermaid-Diagramme) in ein Canvas-Element zu rendern, das dann als PNG-Bild exportiert werden kann.</li>
+                 <li><strong>Google GenAI API:</strong> Die Integration mit einem KI-Modell von Google (erkennbar an der Abhängigkeit <code>@google/genai</code> und der Verwendung eines API-Schlüssels) ist das Herzstück der Analyse- und Generierungsfunktionen, einschließlich Architekturanalyse, Diagrammerstellung und Fehlerkorrektur.</li>
+                <li><strong>Tailwind CSS:</strong> Obwohl nicht direkt im Code der Kernlogik sichtbar, wird Tailwind CSS (via CDN in <code>index.html</code>) für das Styling und Layout der Benutzeroberfläche verwendet, was eine schnelle und konsistente Gestaltung ermöglicht.</li>
+                <li><strong>Lokalisierung (i18n):</strong> Ein benutzerdefinierter Hook (<code>useTranslation</code>) und Sprachdateien (<code>en.json</code>, <code>de.json</code>) ermöglichen die Unterstützung mehrerer Sprachen.</li>
+            </ul>
+            <p>
+                Die Anwendung ist modular aufgebaut, mit separaten Komponenten für den Datei-Explorer (<code>FileExplorer</code>, <code>FileNodeView</code>), den Diagramm-Editor (<code>MermaidEditor</code>), die Diagramm-Anzeige (<code>DiagramViewer</code>) und die Kopfzeile/Einstellungen (<code>Header</code>, <code>SettingsModal</code>). Die Zustandsverwaltung und die Orchestrierung der KI-Aufrufe und Rendering-Prozesse erfolgen in der Haupt-App-Komponente.
+            </p>
+        </section>
+
+        <section>
+            <h2>4. Ergebnisse & Diskussion</h2>
+            <p>
+                Die "Mermaid Architect AI" Anwendung bietet mehrere Vorteile und erzielt signifikante Ergebnisse im Bereich der Software-Dokumentation:
+            </p>
+            <ul>
+                <li><strong>Automatisierte Diagrammgenerierung:</strong> Der zeitaufwendige manuelle Prozess der Diagrammerstellung wird durch die KI-gestützte Analyse und Generierung ersetzt. Dies ermöglicht eine schnelle Visualisierung der Projektstruktur.</li>
+                <li><strong>Unterstützung mehrerer Diagrammiersprachen:</strong> Durch die Unterstützung von Mermaid und PlantUML bietet die Anwendung Flexibilität und Kompatibilität mit gängigen Dokumentations-Workflows.</li>
+                <li><strong>KI-gestützte Fehlerkorrektur:</strong> Syntaxfehler im generierten Diagrammcode können oft automatisch von der KI behoben werden, was den manuellen Debugging-Aufwand reduziert.</li>
+                <li><strong>Dynamischer Überblick:</strong> Durch die Analyse der tatsächlichen Codebasis liefert die Anwendung einen dynamischen und potenziell aktuelleren Überblick über die Architektur als statische, manuell erstellte Diagramme.</li>
+                <li><strong>Exportmöglichkeiten:</strong> Die Möglichkeit, Diagramme in gängigen Formaten (PNG, SVG) und den Quellcode zu exportieren, erleichtert die Integration der generierten Artefakte in andere Dokumente oder Repositories.</li>
+                <li><strong>Generierung weiterer Dokumentation:</strong> Die Fähigkeit, technische Dokumentation, Whitepaper und Handbücher zu generieren, erweitert den Nutzen der Anwendung über die reine Diagrammerstellung hinaus und unterstützt einen umfassenderen Dokumentationsprozess.</li>
+            </ul>
+            <p>
+                Die Anwendung demonstriert das Potenzial von KI im Bereich der Software-Engineering-Tools, insbesondere bei der Automatisierung von Aufgaben, die traditionell manuelle Arbeit erfordern. Die Integration von Sprachmodellen ermöglicht eine semantische Analyse des Codes, die über einfache statische Analysen hinausgeht.
+            </p>
+        </section>
+
+        <section>
+            <h2>5. Fazit & Zukünftige Arbeit</h2>
+            <p>
+                "Mermaid Architect AI" stellt einen vielversprechenden Ansatz zur Automatisierung der Software-Architekturdokumentation dar. Durch die Kombination einer interaktiven Webanwendung mit leistungsstarken KI-Modellen wird der Prozess der Code-Visualisierung und Dokumentation erheblich beschleunigt und vereinfacht. Die Anwendung adressiert effektiv die Herausforderung, Architekturdokumentation aktuell und zugänglich zu halten.
+            </p>
+            <p>
+                Für zukünftige Entwicklungen gibt es mehrere vielversprechende Richtungen:
+            </p>
+            <ul>
+                <li><strong>Unterstützung weiterer Diagrammtypen:</strong> Erweiterung der KI-Fähigkeiten zur Generierung anderer Diagrammtypen (z. B. Komponentendiagramme, Bereitstellungsdiagramme).</li>
+                <li><strong>Verbesserte KI-Analyse:</strong> Tiefere Code-Analyse zur Identifizierung komplexerer Muster, Entwurfsmuster und Abhängigkeiten.</li>
+                <li><strong>Integration mit Versionskontrollsystemen:</strong> Direkte Anbindung an Repositories (z. B. Git) zur Analyse von Codeänderungen und automatischer Aktualisierung von Diagrammen.</li>
+                <li><strong>Interaktive Diagrammbearbeitung:</strong> Ermöglichen einer direkten Bearbeitung des visuellen Diagramms, die sich im Code widerspiegelt.</li>
+                <li><strong>Unterstützung weiterer Programmiersprachen:</strong> Erweiterung der Analysefähigkeiten auf eine breitere Palette von Programmiersprachen und Technologien.</li>
+                <li><strong>Anpassbare Generierungsprompts:</strong> Ermöglichen dem Benutzer, die Prompts für die KI anzupassen, um spezifischere Diagramme oder Dokumentation zu erhalten.</li>
+            </ul>
+            <p>
+                Insgesamt bietet "Mermaid Architect AI" eine solide Grundlage für ein Werkzeug, das das Potenzial hat, die Art und Weise, wie Softwarearchitekturen dokumentiert und verstanden werden, nachhaltig zu verbessern.
+            </p>
+        </section>
+    </div>
+</body>
+</html>
+```

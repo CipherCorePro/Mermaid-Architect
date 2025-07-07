@@ -1,0 +1,49 @@
+@startuml
+actor User
+participant "Browser (UI)" as UI
+participant "React App (State/Logic)" as App
+participant "AI Model (Backend/API)" as AI
+participant "PlantUML Server" as PlantUML
+
+User -> UI : Upload ZIP
+UI -> App : Process ZIP
+App -> UI : Display File Tree
+
+User -> UI : Click "Analyze Project"
+UI -> App : Trigger Analysis
+App -> AI : Send Project Files
+AI --> App : Return Diagram Code & Analysis
+App -> UI : Display Diagram Code & Analysis
+
+User -> UI : Click "Render Diagram"
+UI -> App : Trigger Render
+
+alt Diagramming Language is Mermaid
+    App -> UI : Render using Mermaid library
+else Diagramming Language is PlantUML
+    App -> PlantUML : Send Diagram Code (Encoded)
+    PlantUML --> App : Return SVG/PNG
+    App -> UI : Display SVG/PNG
+end
+
+opt Rendering Error Occurs
+    App -> UI : Display Error Message
+    User -> UI : Click "Fix with AI"
+    UI -> App : Request AI Correction
+    App -> AI : Send Code & Error
+    AI --> App : Return Corrected Code
+    App -> UI : Update Diagram Code
+    App -> App : Trigger Re-render
+end
+
+User -> UI : Click Export Button (PNG/SVG/Source/Docs/etc.)
+UI -> App : Trigger Download/Generation
+App -> UI : Initiate File Download or Generation Process
+
+User -> UI : Click "Settings"
+UI -> App : Open Settings Modal
+User -> UI : Change Settings (Lang, Diagram Type/Lang, Theme)
+UI -> App : Update Settings State
+App -> App : Apply Settings (e.g., re-render with new theme)
+
+@enduml
