@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { FileNode, FileContents, Language, ThemeSettings, DiagramType, DiagrammingLanguage, Manual, ModelConfig } from './types';
 import Header from './components/Header';
@@ -90,9 +91,12 @@ const MainApp: React.FC = () => {
   const [appMode, setAppMode] = useState<'analyze' | 'generate'>('analyze');
   const [modelConfig, setModelConfig] = useState<ModelConfig>({
       provider: 'gemini',
-      apiKey: '',
+      geminiApiKey: '',
+      geminiModel: 'gemini-2.5-flash',
+      openAiApiKey: '',
+      openAiModel: 'gpt-4-turbo',
       lmStudioBaseUrl: 'http://localhost:1234/v1',
-      lmStudioModel: 'google/gemma-2b-it'
+      lmStudioModel: 'local-model'
   });
 
   // State for 'analyze' mode
@@ -207,8 +211,13 @@ const MainApp: React.FC = () => {
   
   const isModelConfigured = useCallback(() => {
     if (modelConfig.provider === 'gemini') {
-        if (!modelConfig.apiKey) {
+        if (!modelConfig.geminiApiKey) {
             alert(t('apiKeyMissing'));
+            return false;
+        }
+    } else if (modelConfig.provider === 'openai') {
+        if (!modelConfig.openAiApiKey) {
+            alert(t('openAiApiKeyMissing'));
             return false;
         }
     } else if (modelConfig.provider === 'lmstudio') {

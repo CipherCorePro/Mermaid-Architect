@@ -38,13 +38,8 @@ async function lmStudioChatCompletion(
         temperature,
     };
     
-    // The user reported an error with LM Studio: `{"error":"'response_format.type' must be 'json_schema' or 'text'"}`
-    // This indicates the connected LM Studio version doesn't support `{ type: 'json_object' }`.
-    // To resolve this, we will not set the `response_format` parameter for LM Studio calls.
-    // The prompts are already engineered to explicitly request a JSON response, so the model
-    // should still provide the correct output format, making the application more robust.
     if (expectJson) {
-        // body.response_format = { type: 'json_object' }; // This causes an error with some LM Studio setups.
+        // body.response_format = { type: 'json_object' }; // Not all LM Studio backends support this
     }
 
     const response = await fetch(`${modelConfig.lmStudioBaseUrl}/chat/completions`, {
@@ -60,6 +55,50 @@ async function lmStudioChatCompletion(
     const data = await response.json();
     if (!data.choices || data.choices.length === 0 || !data.choices[0].message?.content) {
         throw new Error('LM Studio returned an invalid or empty response.');
+    }
+    return data.choices[0].message.content;
+}
+
+/**
+ * Makes a call to the OpenAI API.
+ * @param prompt The full prompt to send to the model.
+ * @param modelConfig The configuration for the AI provider.
+ * @param expectJson Whether to instruct the API to return a JSON object.
+ * @param temperature The creativity of the response.
+ * @returns The text content from the AI response.
+ */
+async function openAiChatCompletion(
+    prompt: string, 
+    modelConfig: ModelConfig, 
+    expectJson: boolean,
+    temperature: number = 0.3
+): Promise<string> {
+    const body: any = {
+        model: modelConfig.openAiModel,
+        messages: [{ role: 'user', content: prompt }],
+        temperature,
+    };
+    
+    if (expectJson) {
+        body.response_format = { type: 'json_object' };
+    }
+
+    const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${modelConfig.openAiApiKey}`
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI API Error: ${response.status} ${errorText}`);
+    }
+    const data = await response.json();
+    if (!data.choices || data.choices.length === 0 || !data.choices[0].message?.content) {
+        throw new Error('OpenAI returned an invalid or empty response.');
     }
     return data.choices[0].message.content;
 }
@@ -144,14 +183,17 @@ export const analyzeProject = async (
 
   try {
     let resultText: string;
+
     if (modelConfig.provider === 'gemini') {
-        const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+        const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: modelConfig.geminiModel,
             contents: prompt,
             config: { responseMimeType: "application/json", temperature: 0.2 },
         });
         resultText = response.text;
+    } else if (modelConfig.provider === 'openai') {
+        resultText = await openAiChatCompletion(prompt, modelConfig, true, 0.2);
     } else {
         resultText = await lmStudioChatCompletion(prompt, modelConfig, true, 0.2);
     }
@@ -189,14 +231,17 @@ ${faultyCode}
 
     try {
         let correctedCode: string;
+
         if (modelConfig.provider === 'gemini') {
-            const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+            const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: modelConfig.geminiModel,
                 contents: prompt,
                 config: { temperature: 0 },
             });
             correctedCode = response.text;
+        } else if (modelConfig.provider === 'openai') {
+            correctedCode = await openAiChatCompletion(prompt, modelConfig, false, 0);
         } else {
             correctedCode = await lmStudioChatCompletion(prompt, modelConfig, false, 0);
         }
@@ -237,13 +282,15 @@ const generateDocument = async (
      try {
         let htmlContent: string;
         if (modelConfig.provider === 'gemini') {
-            const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+            const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: modelConfig.geminiModel,
                 contents: prompt,
                 config: { temperature: 0.4 },
             });
             htmlContent = response.text;
+        } else if (modelConfig.provider === 'openai') {
+            htmlContent = await openAiChatCompletion(prompt, modelConfig, false, 0.4);
         } else {
             htmlContent = await lmStudioChatCompletion(prompt, modelConfig, false, 0.4);
         }
@@ -389,13 +436,15 @@ The string values for "documentation", "whitepaper", and "superprompt" will cont
     try {
         let resultText: string;
         if (modelConfig.provider === 'gemini') {
-            const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+            const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: modelConfig.geminiModel,
                 contents: prompt,
                 config: { responseMimeType: "application/json", temperature: 0.5 },
             });
             resultText = response.text;
+        } else if (modelConfig.provider === 'openai') {
+            resultText = await openAiChatCompletion(prompt, modelConfig, true, 0.5);
         } else {
             resultText = await lmStudioChatCompletion(prompt, modelConfig, true, 0.5);
         }
@@ -457,13 +506,15 @@ ${superprompt}
     try {
         let resultText: string;
          if (modelConfig.provider === 'gemini') {
-            const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+            const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: modelConfig.geminiModel,
                 contents: prompt,
                 config: { responseMimeType: "application/json", temperature: 0.3 },
             });
             resultText = response.text;
+        } else if (modelConfig.provider === 'openai') {
+            resultText = await openAiChatCompletion(prompt, modelConfig, true, 0.3);
         } else {
             resultText = await lmStudioChatCompletion(prompt, modelConfig, true, 0.3);
         }
@@ -549,13 +600,15 @@ async function generateManual(prompt: string, modelConfig: ModelConfig): Promise
     try {
         let resultText: string;
          if (modelConfig.provider === 'gemini') {
-            const ai = new GoogleGenAI({ apiKey: modelConfig.apiKey });
+            const ai = new GoogleGenAI({ apiKey: modelConfig.geminiApiKey });
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: modelConfig.geminiModel,
                 contents: prompt,
                 config: { responseMimeType: "application/json", temperature: 0.3 },
             });
             resultText = response.text;
+        } else if (modelConfig.provider === 'openai') {
+            resultText = await openAiChatCompletion(prompt, modelConfig, true, 0.3);
         } else {
             resultText = await lmStudioChatCompletion(prompt, modelConfig, true, 0.3);
         }

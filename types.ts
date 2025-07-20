@@ -8,7 +8,7 @@ export interface FileNode {
 }
 
 export interface FileContents {
-  [path: string]: string;
+  [path:string]: string;
 }
 
 export type Language = 'en' | 'de';
@@ -41,11 +41,14 @@ export interface Manual {
   sections: ManualSection[];
 }
 
-export type AiProvider = 'gemini' | 'lmstudio';
+export type AiProvider = 'gemini' | 'openai' | 'lmstudio';
 
 export interface ModelConfig {
     provider: AiProvider;
-    apiKey: string; // For Gemini
+    geminiApiKey: string;
+    geminiModel: string;
+    openAiApiKey: string;
+    openAiModel: string;
     lmStudioBaseUrl: string;
     lmStudioModel: string;
 }

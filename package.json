@@ -6,7 +6,7 @@
   "homepage": "./",
   "scripts": {
     "start": "npm run build:react && electron .",
-    "build:react": "esbuild index.tsx --bundle --outfile=index.js --platform=browser --format=esm --jsx=automatic --external:react --external:react-dom/* --external:react/* --external:@google/genai",
+    "build:react": "esbuild index.tsx --bundle --outfile=index.js --platform=browser --format=esm --jsx=automatic --external:react --external:react-dom/* --external:react/* --external:@google/genai --sourcemap",
     "build": "npm run build:react && electron-builder",
     "build:win": "npm run build:react && electron-builder --win",
     "build:mac": "npm run build:react && electron-builder --mac",

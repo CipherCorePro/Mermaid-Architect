@@ -168,20 +168,58 @@ const DiagramViewer: React.FC<DiagramViewerProps> = ({
         console.error("Failed to download PlantUML PNG:", error);
         alert("Failed to download PlantUML PNG.");
       }
-    } else { // Mermaid
-      const targetElement = diagramContainerRef.current?.firstChild as HTMLElement | null;
-      if (targetElement) {
-        // @ts-ignore
-        window.html2canvas(targetElement, { backgroundColor: 'transparent' }).then(canvas => {
-          const dataUrl = canvas.toDataURL('image/png');
+    } else { // Mermaid - New implementation to fix html2canvas issue
+      if (!svgContent || !diagramContainerRef.current?.firstChild) {
+        return;
+      }
+
+      const svgElement = diagramContainerRef.current.firstChild as SVGElement;
+      const { width, height } = svgElement.getBoundingClientRect();
+
+      if (width === 0 || height === 0) {
+        console.error("Cannot export PNG for a diagram with zero dimensions.");
+        alert("Cannot export: Diagram has no size. Please render a valid diagram first.");
+        return;
+      }
+
+      const img = new Image();
+      const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const padding = 20;
+        canvas.width = width + padding * 2;
+        canvas.height = height + padding * 2;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Use a white background as it's more portable than transparent
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw the SVG onto the canvas, centered with padding
+          ctx.drawImage(img, padding, padding, width, height);
+          
+          const pngUrl = canvas.toDataURL('image/png');
+          
           const a = document.createElement('a');
-          a.href = dataUrl;
+          a.href = pngUrl;
           a.download = 'diagram.png';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-        });
-      }
+        }
+        URL.revokeObjectURL(url);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        console.error("Error: Could not load the SVG into an Image element for conversion.");
+        alert("Failed to convert diagram to PNG. The SVG may contain unsupported features.");
+      };
+
+      img.src = url;
     }
   };
 
