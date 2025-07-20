@@ -1,0 +1,46 @@
+{
+  "name": "mermaid-architect-ai",
+  "version": "1.0.0",
+  "description": "Eine innovative Webanwendung, die Softwareentwicklungsteams und Architekten dabei unterstützt, die Struktur und Abhängigkeiten ihrer Projekte schnell zu verstehen und zu dokumentieren.",
+  "main": "electron/main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "npm run build:react && electron .",
+    "build:react": "esbuild index.tsx --bundle --outfile=index.js --platform=browser --format=esm --jsx=automatic --external:react --external:react-dom/* --external:react/* --external:@google/genai",
+    "build": "npm run build:react && electron-builder",
+    "build:win": "npm run build:react && electron-builder --win",
+    "build:mac": "npm run build:react && electron-builder --mac",
+    "build:linux": "npm run build:react && electron-builder --linux"
+  },
+  "author": "AI Architect",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "esbuild": "^0.21.4"
+  },
+  "build": {
+    "appId": "com.mermaid.architect.ai",
+    "productName": "Mermaid Architect AI",
+    "files": [
+      "**/*",
+      "!**/node_modules/*",
+      "!**/release/*",
+      "!**/.git/*",
+      "!**/*.map"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
